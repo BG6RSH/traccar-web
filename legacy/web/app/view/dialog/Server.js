@@ -69,6 +69,12 @@ Ext.define('Traccar.view.dialog.Server', {
                 xtype: 'checkboxfield',
                 inputValue: true,
                 uncheckedValue: false,
+                name: 'twelveHourFormat',
+                fieldLabel: Strings.settingsTwelveHourFormat
+            }, {
+                xtype: 'checkboxfield',
+                inputValue: true,
+                uncheckedValue: false,
                 name: 'forceSettings',
                 fieldLabel: Strings.serverForceSettings
             }, {

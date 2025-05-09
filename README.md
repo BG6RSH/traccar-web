@@ -1,28 +1,28 @@
-# [Traccar Web Interface](https://www.traccar.org)
+# [Traccar Web界面](https://www.traccar.org)
 
-## Overview
+## 概述
 
-Traccar is open source server for various GPS tracking devices. This repository contains web interface for the Traccar platform. For back-end checkout [main Traccar repository](https://github.com/tananaev/traccar).
+Traccar是各种GPS跟踪设备的开源服务器。此存储库包含Traccar平台的Web界面。用于后端结帐[主Traccar存储库](https://github.com/tananaev/traccar)。
 
-The modern app uses React, Material UI and MapLibre. For more information on how to build it please check the [web app documentation](https://www.traccar.org/build-web-app/).
+现代应用程序使用React、Material UI和MapLibre。有关如何构建它的更多信息，请查看[web app留档](https://www.traccar.org/build-web-app/)。
 
-## Team
+## 团队
 
-- Anton Tananaev ([anton@traccar.org](mailto:anton@traccar.org))
-- Andrey Kunitsyn ([andrey@traccar.org](mailto:andrey@traccar.org))
+-Anton Tananaev([anton@traccar.org](mailto：anton@traccar.org))
+-Andrey Kunitsyn([andrey@traccar.org](mailto：andrey@traccar.org))
 
-## License
+## 许可证
 
-    Apache License, Version 2.0
+Apache许可证，2.0版
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+根据Apache许可证2.0版(“许可证”)获得许可；
+除非符合许可证，否则您不得使用此文件。
+你可于以下网址索取许可证副本
 
-        http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+除非适用法律要求或书面同意，软件
+根据许可证分发是在“按原样”基础上分发的，
+没有任何明示或暗示的保证或条件。
+有关管理权限的特定语言，请参阅许可证和
+许可下的限制。

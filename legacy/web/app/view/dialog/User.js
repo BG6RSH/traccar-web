@@ -82,6 +82,12 @@ Ext.define('Traccar.view.dialog.User', {
                 name: 'zoom',
                 fieldLabel: Strings.serverZoom
             }, {
+                xtype: 'checkboxfield',
+                inputValue: true,
+                uncheckedValue: false,
+                name: 'twelveHourFormat',
+                fieldLabel: Strings.settingsTwelveHourFormat
+            }, {
                 xtype: 'clearableComboBox',
                 name: 'coordinateFormat',
                 fieldLabel: Strings.settingsCoordinateFormat,

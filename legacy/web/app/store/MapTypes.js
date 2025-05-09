@@ -32,6 +32,12 @@ Ext.define('Traccar.store.MapTypes', {
         key: 'autoNavi',
         name: Strings.mapAutoNavi
     }, {
+        key: 'autoNaviSatellite',
+        name: Strings.mapAutoNaviSatellite
+    }, {
+        key: 'qq',
+        name: Strings.mapQq
+    }, {
         key: 'bingRoad',
         name: Strings.mapBingRoad
     }, {

@@ -96,11 +96,30 @@ Ext.define('Traccar.view.map.BaseMap', {
                     })
                 }),
                 new ol.layer.Tile({
+                    title: Strings.mapAutoNaviSatellite,
+                    type: 'base',
+                    visible: type === 'autoNaviSatellite',
+                    source: new ol.source.OSM({
+                        url: 'https://wprd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=1&style=6&x={x}&y={y}&z={z}',
+                        attributions: '&copy; <a href="https://ditu.amap.com/">高德</a>'
+                    })
+                }),
+                new ol.layer.Tile({
                     title: Strings.mapAutoNavi,
                     type: 'base',
                     visible: type === 'autoNavi' || type === 'baidu',
                     source: new ol.source.OSM({
-                        url: 'https://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}'
+                        url: 'https://wprd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
+                        attributions: '&copy; <a href="https://ditu.amap.com/">高德</a>'
+                    })
+                }),
+                new ol.layer.Tile({
+                    title: Strings.mapQq,
+                    type: 'base',
+                    visible: type === 'qq',
+                    source: new ol.source.OSM({
+                        url: 'http://rt{0-3}.map.gtimg.com/realtimerender?z={z}&x={x}&y={-y}&type=vector&style=1',
+                        attributions: '&copy; <a href="https://map.qq.com/">腾讯</a>'
                     })
                 }),
                 new ol.layer.Tile({
