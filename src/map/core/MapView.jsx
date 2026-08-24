@@ -64,11 +64,11 @@ const MapView = ({ children }) => {
   const mapStyles = useMapStyles();
   const activeMapStyles = useAttributePreference(
     'activeMapStyles',
-    'locationIqStreets,locationIqDark,openFreeMap',
+    'autoNavi,tencentRoad,tencentSatellite,tencentHybrid',
   );
   const [selectedStyleId, setSelectedStyleId] = usePersistedState(
     'selectedMapStyle',
-    usePreference('map', 'locationIqStreets'),
+    usePreference('map', 'autoNavi'),
   );
   const maxZoom = useAttributePreference('web.maxZoom');
 
