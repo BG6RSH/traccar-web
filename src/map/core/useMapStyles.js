@@ -294,6 +294,52 @@ export default () => {
         available: true,
       },
       {
+        id: 'tencentSatellite',
+        title: t('mapTencentSatellite'),
+        style: styleCustom({
+          tiles: ['tencent-sate://tile/{z}/{x}/{y}'],
+          minZoom: 3,
+          maxZoom: 18,
+          attribution: '\u00a9 \u817e\u8baf\u5730\u56fe',
+        }),
+        coordinateSystem: 'gcj02',
+        available: true,
+      },
+      {
+        id: 'tencentHybrid',
+        title: t('mapTencentHybrid'),
+        style: {
+          version: 8,
+          sources: {
+            satellite: {
+              type: 'raster',
+              tiles: ['tencent-sate://tile/{z}/{x}/{y}'],
+              tileSize: 256,
+              minzoom: 3,
+              maxzoom: 18,
+            },
+            annotation: {
+              type: 'raster',
+              tiles: [0, 1, 2, 3].map(
+                (i) => `https://rt${i}.map.gtimg.com/tile?z={z}&x={x}&y={y}&type=vector&styleid=3`,
+              ),
+              scheme: 'tms',
+              tileSize: 256,
+              minzoom: 4,
+              maxzoom: 18,
+              attribution: '\u00a9 \u817e\u8baf\u5730\u56fe',
+            },
+          },
+          glyphs: 'https://cdn.traccar.com/map/fonts/{fontstack}/{range}.pbf',
+          layers: [
+            { id: 'satellite', type: 'raster', source: 'satellite' },
+            { id: 'annotation', type: 'raster', source: 'annotation' },
+          ],
+        },
+        coordinateSystem: 'gcj02',
+        available: true,
+      },
+      {
         id: 'ordnanceSurvey',
         title: t('mapOrdnanceSurvey'),
         style: `https://api.os.uk/maps/vector/v1/vts/resources/styles?key=${ordnanceSurveyKey}`,

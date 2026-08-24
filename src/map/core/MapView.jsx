@@ -21,6 +21,23 @@ maplibregl.setWorkerUrl(maplibreWorkerUrl);
 maplibregl.addProtocol('google', googleProtocol);
 maplibregl.addProtocol('pmtiles', new Protocol().tile);
 
+maplibregl.addProtocol('tencent-sate', async (params, abortController) => {
+  const match = params.url.match(/tencent-sate:\/\/tile\/([\d]+)\/([\d]+)\/([\d]+)/);
+  if (!match) throw new Error('Invalid tencent-sate URL');
+  const z = parseInt(match[1], 10);
+  const x = parseInt(match[2], 10);
+  const y = parseInt(match[3], 10);
+  const yTMS = (1 << z) - 1 - y;
+  const x16 = Math.floor(x / 16);
+  const y16 = Math.floor(yTMS / 16);
+  const s = x % 4;
+  const realUrl = `https://p${s}.map.gtimg.com/sateTiles/${z}/${x16}/${y16}/${x}_${yTMS}.jpg`;
+  const response = await fetch(realUrl, { signal: abortController.signal });
+  if (!response.ok) return { data: null };
+  const data = await response.arrayBuffer();
+  return { data, cacheControl: response.headers.get('cache-control') };
+});
+
 export const map = new maplibregl.Map({
   container: element,
   attributionControl: false,
@@ -64,7 +81,7 @@ const MapView = ({ children }) => {
   const mapStyles = useMapStyles();
   const activeMapStyles = useAttributePreference(
     'activeMapStyles',
-    'autoNavi,tencentRoad,tencentSatellite,tencentHybrid',
+    'autoNavi,autoNaviSatellite,tencentMap,tencentSatellite,tencentHybrid',
   );
   const [selectedStyleId, setSelectedStyleId] = usePersistedState(
     'selectedMapStyle',

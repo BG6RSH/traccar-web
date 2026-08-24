@@ -2,9 +2,11 @@ import { useSelector } from 'react-redux';
 import useMapLayer from './core/useMapLayer';
 import getSpeedColor from '../common/util/colors';
 import { useAttributePreference } from '../common/util/preferences';
-import { toMapCoordinates } from './core/mapUtil';
+import { toMapCoordinates, toMapCoordinatesFrom } from './core/mapUtil';
 
-const MapRoutePath = ({ positions }) => {
+const MapRoutePath = ({
+  positions, lineDash, sourceCoordinateSystem, color, lineWidth, lineOpacity,
+}) => {
   const reportColor = useSelector((state) => {
     const position = positions?.find(() => true);
     if (position) {
@@ -19,6 +21,10 @@ const MapRoutePath = ({ positions }) => {
     return null;
   });
 
+  const convert = sourceCoordinateSystem
+    ? (lng, lat) => toMapCoordinatesFrom(lng, lat, sourceCoordinateSystem)
+    : toMapCoordinates;
+
   const mapLineWidth = useAttributePreference('mapLineWidth', 2);
   const mapLineOpacity = useAttributePreference('mapLineOpacity', 1);
 
@@ -31,14 +37,14 @@ const MapRoutePath = ({ positions }) => {
       geometry: {
         type: 'LineString',
         coordinates: [
-          toMapCoordinates(positions[i].longitude, positions[i].latitude),
-          toMapCoordinates(positions[i + 1].longitude, positions[i + 1].latitude),
+          convert(positions[i].longitude, positions[i].latitude),
+          convert(positions[i + 1].longitude, positions[i + 1].latitude),
         ],
       },
       properties: {
-        color: reportColor || getSpeedColor(positions[i + 1].speed, minSpeed, maxSpeed),
-        width: mapLineWidth,
-        opacity: mapLineOpacity,
+        color: color || reportColor || getSpeedColor(positions[i + 1].speed, minSpeed, maxSpeed),
+        width: lineWidth || mapLineWidth,
+        opacity: lineOpacity || mapLineOpacity,
       },
     });
   }
@@ -55,6 +61,7 @@ const MapRoutePath = ({ positions }) => {
           'line-color': ['get', 'color'],
           'line-width': ['get', 'width'],
           'line-opacity': ['get', 'opacity'],
+          ...(lineDash ? { 'line-dasharray': lineDash } : {}),
         },
       },
     ],
@@ -63,7 +70,7 @@ const MapRoutePath = ({ positions }) => {
       type: 'FeatureCollection',
       features,
     },
-    dataDeps: [positions, reportColor, mapLineWidth, mapLineOpacity],
+    dataDeps: [positions, reportColor, mapLineWidth, mapLineOpacity, color, lineWidth, lineOpacity],
   });
 
   return null;

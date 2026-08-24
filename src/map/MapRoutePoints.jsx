@@ -2,13 +2,13 @@ import { useCallback } from 'react';
 import { map } from './core/MapView';
 import useMapLayer from './core/useMapLayer';
 import getSpeedColor from '../common/util/colors';
-import { findFonts, toMapCoordinates } from './core/mapUtil';
+import { findFonts, toMapCoordinates, toMapCoordinatesFrom } from './core/mapUtil';
 import MapSpeedLegend from './control/MapSpeedLegend';
 
 const onMouseEnter = () => (map.getCanvas().style.cursor = 'pointer');
 const onMouseLeave = () => (map.getCanvas().style.cursor = '');
 
-const MapRoutePoints = ({ positions, onClick, showSpeedControl }) => {
+const MapRoutePoints = ({ positions, onClick, showSpeedControl, sourceCoordinateSystem }) => {
   const onMarkerClick = useCallback(
     (event) => {
       event.preventDefault();
@@ -22,6 +22,10 @@ const MapRoutePoints = ({ positions, onClick, showSpeedControl }) => {
 
   const maxSpeed = positions.reduce((a, p) => Math.max(a, p.speed), -Infinity);
   const minSpeed = positions.reduce((a, p) => Math.min(a, p.speed), Infinity);
+
+  const convert = sourceCoordinateSystem
+    ? (lng, lat) => toMapCoordinatesFrom(lng, lat, sourceCoordinateSystem)
+    : toMapCoordinates;
 
   useMapLayer({
     layers: [
@@ -51,7 +55,7 @@ const MapRoutePoints = ({ positions, onClick, showSpeedControl }) => {
         type: 'Feature',
         geometry: {
           type: 'Point',
-          coordinates: toMapCoordinates(position.longitude, position.latitude),
+          coordinates: convert(position.longitude, position.latitude),
         },
         properties: {
           index,

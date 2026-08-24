@@ -5,18 +5,30 @@ import { map } from './core/MapView';
 import useMapLayer from './core/useMapLayer';
 import { useAttributePreference } from '../common/util/preferences';
 import { useCatchCallback } from '../reactHelper';
-import { findFonts, toMapCoordinates } from './core/mapUtil';
+import { findFonts, toMapCoordinates, toMapCoordinatesFrom } from './core/mapUtil';
 
 const onMouseEnter = () => (map.getCanvas().style.cursor = 'pointer');
 const onMouseLeave = () => (map.getCanvas().style.cursor = '');
 
-const MapMarkers = ({ markers, showTitles, cluster, direction, onClick, disabled }) => {
+const MapMarkers = ({
+  markers,
+  showTitles,
+  cluster,
+  direction,
+  onClick,
+  disabled,
+  sourceCoordinateSystem,
+}) => {
   const theme = useTheme();
   const desktop = useMediaQuery(theme.breakpoints.up('md'));
   const iconScale = useAttributePreference('iconScale', desktop ? 0.75 : 1);
 
   const disabledRef = useRef(disabled);
   disabledRef.current = disabled;
+
+  const convert = sourceCoordinateSystem
+    ? (lng, lat) => toMapCoordinatesFrom(lng, lat, sourceCoordinateSystem)
+    : toMapCoordinates;
 
   const onMarkerClick = useCallback(
     (event) => {
@@ -109,7 +121,7 @@ const MapMarkers = ({ markers, showTitles, cluster, direction, onClick, disabled
           type: 'Feature',
           geometry: {
             type: 'Point',
-            coordinates: toMapCoordinates(longitude, latitude),
+            coordinates: convert(longitude, latitude),
           },
           properties: {
             ...rest,

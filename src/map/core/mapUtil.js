@@ -22,6 +22,15 @@ export const fromMapCoordinates = (longitude, latitude) =>
     ? gcoord.transform([longitude, latitude], coordinateSystem(map.coordinateSystem), gcoord.WGS84)
     : [longitude, latitude];
 
+export const toMapCoordinatesFrom = (longitude, latitude, sourceSystem) =>
+  map.coordinateSystem
+    ? gcoord.transform(
+        [longitude, latitude],
+        coordinateSystem(sourceSystem),
+        coordinateSystem(map.coordinateSystem),
+      )
+    : [longitude, latitude];
+
 const transformGeometry = (geometry, from, to) =>
   gcoord.transform(structuredClone(geometry), from, to);
 

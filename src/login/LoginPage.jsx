@@ -274,6 +274,16 @@ const LoginPage = () => {
                 {t('loginReset')}
               </Link>
             )}
+            <Link
+              href="http://bbs.atoo.top:8081"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={classes.link}
+              underline="none"
+              variant="caption"
+            >
+              {t('loginForum')}
+            </Link>
           </div>
         )}
       </div>

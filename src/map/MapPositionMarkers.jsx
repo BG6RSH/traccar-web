@@ -15,6 +15,7 @@ const MapPositionMarkers = ({
   selectedPosition,
   titleField,
   disabled,
+  sourceCoordinateSystem,
 }) => {
   const devices = useSelector((state) => state.devices.items);
   const selectedDeviceId = useSelector((state) => state.devices.selectedId);
@@ -83,6 +84,7 @@ const MapPositionMarkers = ({
         cluster={mapCluster}
         onClick={onClick}
         disabled={disabled}
+        sourceCoordinateSystem={sourceCoordinateSystem}
       />
       <MapMarkers
         markers={markers.filter((it) => it.deviceId === selectedDeviceId)}
@@ -90,6 +92,7 @@ const MapPositionMarkers = ({
         direction
         onClick={onClick}
         disabled={disabled}
+        sourceCoordinateSystem={sourceCoordinateSystem}
       />
     </>
   );
