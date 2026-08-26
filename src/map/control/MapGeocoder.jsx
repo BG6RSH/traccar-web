@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import gcoord from 'gcoord';
 import {
   useTheme,
   Popover,
@@ -17,6 +18,7 @@ import { map } from '../core/MapView';
 import { toMapCoordinates } from '../core/mapUtil';
 import { errorsActions } from '../../store';
 import { useTranslation } from '../../common/components/LocalizationProvider';
+import fetchOrThrow from '../../common/util/fetchOrThrow';
 
 const useStyles = makeStyles()((theme) => ({
   button: {
@@ -55,13 +57,14 @@ const MapGeocoder = () => {
     if (!query.trim()) {
       setResults([]);
       setLoading(false);
+      return undefined;
     }
     const controller = new AbortController();
     const timeoutId = setTimeout(async () => {
       setLoading(true);
       try {
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=geojson&addressdetails=1`;
-        const response = await fetch(url, { signal: controller.signal });
+        const url = `/api/server/geosearch?q=${encodeURIComponent(query)}`;
+        const response = await fetchOrThrow(url, { signal: controller.signal });
         const data = await response.json();
         setResults(data.features || []);
       } catch (e) {
@@ -105,7 +108,15 @@ const MapGeocoder = () => {
 
   const onSelect = (feature) => {
     const [minX, minY, maxX, maxY] = feature.bbox;
-    map.fitBounds([toMapCoordinates(minX, minY), toMapCoordinates(maxX, maxY)], { padding: 40 });
+    const convert = (longitude, latitude) => {
+      const [wgsLongitude, wgsLatitude] = gcoord.transform(
+        [longitude, latitude],
+        gcoord.GCJ02,
+        gcoord.WGS84,
+      );
+      return toMapCoordinates(wgsLongitude, wgsLatitude);
+    };
+    map.fitBounds([convert(minX, minY), convert(maxX, maxY)], { padding: 40 });
     setAnchorEl(null);
     setQuery('');
     setResults([]);
