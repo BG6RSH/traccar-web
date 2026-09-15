@@ -3,17 +3,14 @@ import { map } from './MapView';
 
 const emptyFeatureCollection = { type: 'FeatureCollection', features: [] };
 
-const useMapLayer = ({ enabled = true, source, layers, layersDeps, data, dataDeps = [] }) => {
+const useMapLayer = ({ source, layers, layersDeps, data, dataDeps = [] }) => {
   const id = useId();
 
   useEffect(() => {
-    if (!enabled) {
-      return;
-    }
     const isGeoJson = !source?.type || source.type === 'geojson';
     map.addSource(
       id,
-      isGeoJson ? { type: 'geojson', data: emptyFeatureCollection, ...source } : source,
+      isGeoJson ? { type: 'geojson', data: data ?? emptyFeatureCollection, ...source } : source,
     );
     layers.forEach((layer) => {
       const { on, key, ...spec } = layer;
@@ -39,14 +36,14 @@ const useMapLayer = ({ enabled = true, source, layers, layersDeps, data, dataDep
       }
     };
     // eslint-disable-next-line @eslint-react/exhaustive-deps
-  }, [id, enabled, ...layersDeps]);
+  }, [id, ...layersDeps]);
 
   useEffect(() => {
-    if (enabled && data !== undefined) {
-      map.getSource(id)?.setData(data);
+    if (data !== undefined) {
+      map.getSource(id)?.setData(data ?? emptyFeatureCollection);
     }
     // eslint-disable-next-line @eslint-react/exhaustive-deps
-  }, [id, enabled, ...dataDeps]);
+  }, [id, ...dataDeps]);
 
   return id;
 };

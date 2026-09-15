@@ -28,13 +28,14 @@ const PoiMap = () => {
             ? gcoord.transform(parsed, gcoord.WGS84, gcoord.GCJ02)
             : parsed,
         );
+      } else {
+        setData(null);
       }
     },
     [poiLayer],
   );
 
   useMapLayer({
-    enabled: !!data,
     layers: [
       {
         key: 'fill',
@@ -82,7 +83,7 @@ const PoiMap = () => {
         },
       },
     ],
-    layersDeps: [t, theme.palette.geometry.main, data],
+    layersDeps: [t, theme.palette.geometry.main],
     data,
     dataDeps: [data],
   });
