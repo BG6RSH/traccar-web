@@ -20,6 +20,8 @@ import FastForwardIcon from '@mui/icons-material/FastForward';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import MenuIcon from '@mui/icons-material/Menu';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import MapView, { map } from '../map/core/MapView';
@@ -180,6 +182,7 @@ const ReplayPage = () => {
   const [month, setMonth] = useState(() => dayjs().startOf('month'));
   const [dailyItems, setDailyItems] = useState({});
   const [dailyLoading, setDailyLoading] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(true);
 
   const weekdays = useMemo(
     () =>
@@ -467,11 +470,14 @@ const ReplayPage = () => {
                 <IconButton onClick={handleDownload}>
                   <DownloadIcon />
                 </IconButton>
-                <IconButton edge="end" onClick={() => setFilterOpen((open) => !open)}>
+                <IconButton onClick={() => setFilterOpen((open) => !open)}>
                   <TuneIcon />
                 </IconButton>
               </>
             )}
+            <IconButton edge="end" onClick={() => setCalendarOpen((open) => !open)}>
+              {calendarOpen ? <MenuOpenIcon /> : <MenuIcon />}
+            </IconButton>
           </Toolbar>
         </Paper>
         <Paper className={classes.content} square>
@@ -526,7 +532,7 @@ const ReplayPage = () => {
           <div style={{ display: loaded && !filterOpen ? 'none' : 'block' }}>
             <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
           </div>
-          {deviceId && (
+          {deviceId && calendarOpen && (
             <Box className={classes.calendar}>
               <Box className={classes.calendarHeader}>
                 <IconButton
