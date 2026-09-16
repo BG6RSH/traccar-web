@@ -1,12 +1,25 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { IconButton, Paper, Slider, Toolbar, Typography, Switch, FormControlLabel } from '@mui/material';
+import {
+  IconButton,
+  Paper,
+  Slider,
+  Toolbar,
+  Typography,
+  Switch,
+  FormControlLabel,
+  Box,
+  CircularProgress,
+} from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import dayjs from 'dayjs';
 import TuneIcon from '@mui/icons-material/Tune';
 import DownloadIcon from '@mui/icons-material/Download';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import FastForwardIcon from '@mui/icons-material/FastForward';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import MapView, { map } from '../map/core/MapView';
@@ -14,6 +27,8 @@ import MapRoutePath from '../map/MapRoutePath';
 import MapRoutePoints from '../map/MapRoutePoints';
 import MapPositionMarkers from '../map/MapPositionMarkers';
 import { formatTime } from '../common/util/formatter';
+import { distanceFromMeters, distanceUnitString } from '../common/util/converter';
+import { useAttributePreference } from '../common/util/preferences';
 import ReportFilter from '../reports/components/ReportFilter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useCatchCallback } from '../reactHelper';
@@ -73,6 +88,65 @@ const useStyles = makeStyles()((theme) => ({
       marginTop: theme.spacing(1),
     },
   },
+  calendar: {
+    marginTop: theme.spacing(1),
+    paddingTop: theme.spacing(1),
+    borderTop: `1px solid ${theme.palette.divider}`,
+  },
+  calendarHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  calendarGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(7, 1fr)',
+    gap: '2px',
+    marginTop: theme.spacing(0.5),
+  },
+  calendarWeekday: {
+    textAlign: 'center',
+    fontSize: '0.7rem',
+    color: theme.palette.text.secondary,
+    padding: theme.spacing(0.5, 0),
+  },
+  calendarCell: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: theme.spacing(5.5),
+    padding: theme.spacing(0.25),
+    border: 'none',
+    borderRadius: theme.spacing(1),
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+    },
+  },
+  calendarCellEmpty: {
+    cursor: 'default',
+    opacity: 0.35,
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
+  },
+  calendarCellActive: {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    '&:hover': {
+      backgroundColor: theme.palette.primary.dark,
+    },
+  },
+  calendarDistance: {
+    fontSize: '0.62rem',
+    lineHeight: 1.2,
+    whiteSpace: 'nowrap',
+    maxWidth: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 }));
 
 const ReplayPage = () => {
@@ -82,7 +156,7 @@ const ReplayPage = () => {
   const navigate = useNavigate();
   const timerRef = useRef();
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const defaultDeviceId = useSelector((state) => state.devices.selectedId);
 
@@ -98,6 +172,99 @@ const ReplayPage = () => {
   const [graspRoadEnabled, setGraspRoadEnabled] = useState(false);
   const [correctedPositions, setCorrectedPositions] = useState([]);
   const [mapGcj02, setMapGcj02] = useState(map.coordinateSystem === 'gcj02');
+
+  const distanceUnit = useAttributePreference('distanceUnit');
+
+  const deviceId = Number(searchParams.get('deviceId')) || selectedDeviceId;
+
+  const [month, setMonth] = useState(() => dayjs().startOf('month'));
+  const [dailyItems, setDailyItems] = useState({});
+  const [dailyLoading, setDailyLoading] = useState(false);
+
+  const weekdays = useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, i) =>
+        new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(
+          dayjs()
+            .day((i + 1) % 7)
+            .toDate(),
+        ),
+      ),
+    [],
+  );
+
+  const calendarDays = useMemo(() => {
+    const firstDay = month.clone().startOf('month');
+    const daysInMonth = month.daysInMonth();
+    const offset = (firstDay.day() + 6) % 7; // Monday as the first day of the week
+    const cells = [];
+    for (let i = 0; i < offset; i += 1) {
+      cells.push(null);
+    }
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      cells.push(month.clone().date(day));
+    }
+    while (cells.length % 7 !== 0) {
+      cells.push(null);
+    }
+    return cells;
+  }, [month]);
+
+  const monthLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long' }).format(month.toDate()),
+    [month],
+  );
+
+  const selectedDateKey = from ? dayjs(from).format('YYYY-MM-DD') : null;
+
+  const formatDayDistance = (value) => distanceFromMeters(value, distanceUnit).toFixed(2);
+
+  useEffect(() => {
+    if (!deviceId) {
+      setDailyItems({});
+      return undefined;
+    }
+    const controller = new AbortController();
+    setDailyLoading(true);
+    const query = new URLSearchParams({
+      deviceId: String(deviceId),
+      from: month.clone().startOf('month').toISOString(),
+      to: month.clone().endOf('month').toISOString(),
+      daily: 'true',
+    });
+    (async () => {
+      try {
+        const response = await fetchOrThrow(`/api/reports/summary?${query.toString()}`, {
+          signal: controller.signal,
+        });
+        const items = await response.json();
+        const map = {};
+        items.forEach((item) => {
+          map[dayjs(item.startTime).format('YYYY-MM-DD')] = item;
+        });
+        setDailyItems(map);
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          dispatch(errorsActions.push(e.message));
+        }
+      } finally {
+        setDailyLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [deviceId, month, dispatch]);
+
+  const onDayClick = (item) => {
+    if (!item || !deviceId) {
+      return;
+    }
+    const params = new URLSearchParams(searchParams);
+    params.set('deviceId', String(deviceId));
+    params.set('from', dayjs(item.startTime).startOf('day').toISOString());
+    params.set('to', dayjs(item.startTime).endOf('day').toISOString());
+    setSearchParams(params);
+  };
 
   useEffect(() => {
     const onStyleData = () => {
@@ -170,6 +337,7 @@ const ReplayPage = () => {
       const deviceId = deviceIds.find(() => true);
       setLoading(true);
       setSelectedDeviceId(deviceId);
+      setMonth(dayjs(from).startOf('month'));
       setCorrectedPositions([]);
       setGraspRoadEnabled(false);
       const query = new URLSearchParams({ deviceId, from, to });
@@ -268,7 +436,9 @@ const ReplayPage = () => {
             color="#831eba"
             lineWidth={5}
             lineOpacity={0.6}
-            sourceCoordinateSystem={correctedPositions[0]?.attributes?.correctedCoordinateSystem || 'gcj02'}
+            sourceCoordinateSystem={
+              correctedPositions[0]?.attributes?.correctedCoordinateSystem || 'gcj02'
+            }
           />
         )}
         <MapRoutePoints positions={positions} onClick={onPointClick} showSpeedControl />
@@ -286,7 +456,7 @@ const ReplayPage = () => {
       <div className={classes.sidebar}>
         <Paper elevation={3} square>
           <Toolbar>
-            <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate(-1)}>
+            <IconButton edge="start" sx={{ mr: 2 }} onClick={() => navigate('/')}>
               <BackIcon />
             </IconButton>
             <Typography variant="h6" className={classes.title}>
@@ -344,7 +514,9 @@ const ReplayPage = () => {
               </div>
               {mapGcj02 && (
                 <FormControlLabel
-                  control={<Switch checked={graspRoadEnabled} onChange={handleGraspRoad} size="small" />}
+                  control={
+                    <Switch checked={graspRoadEnabled} onChange={handleGraspRoad} size="small" />
+                  }
                   label={t('reportGraspRoad')}
                   className={classes.formControlLabel}
                 />
@@ -354,6 +526,66 @@ const ReplayPage = () => {
           <div style={{ display: loaded && !filterOpen ? 'none' : 'block' }}>
             <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
           </div>
+          {deviceId && (
+            <Box className={classes.calendar}>
+              <Box className={classes.calendarHeader}>
+                <IconButton
+                  size="small"
+                  onClick={() => setMonth((m) => m.clone().subtract(1, 'month'))}
+                >
+                  <ChevronLeftIcon fontSize="small" />
+                </IconButton>
+                <Typography variant="body2">{monthLabel}</Typography>
+                <IconButton size="small" onClick={() => setMonth((m) => m.clone().add(1, 'month'))}>
+                  <ChevronRightIcon fontSize="small" />
+                </IconButton>
+              </Box>
+              <Box className={classes.calendarGrid}>
+                {weekdays.map((weekday) => (
+                  <Box key={weekday} className={classes.calendarWeekday}>
+                    {weekday}
+                  </Box>
+                ))}
+                {calendarDays.map((day, index) => {
+                  if (!day) {
+                    return <Box key={`empty-${index}`} className={classes.calendarCell} />;
+                  }
+                  const dateKey = day.format('YYYY-MM-DD');
+                  const item = dailyItems[dateKey];
+                  const active = dateKey === selectedDateKey;
+                  return (
+                    <Box
+                      key={dateKey}
+                      component="button"
+                      type="button"
+                      disabled={!item}
+                      title={
+                        item
+                          ? `${formatDayDistance(item.distance)} ${distanceUnitString(distanceUnit, t)}`
+                          : dateKey
+                      }
+                      className={`${classes.calendarCell} ${
+                        item ? '' : classes.calendarCellEmpty
+                      } ${active ? classes.calendarCellActive : ''}`}
+                      onClick={() => onDayClick(item)}
+                    >
+                      <span>{day.date()}</span>
+                      {item && (
+                        <span className={classes.calendarDistance}>
+                          {formatDayDistance(item.distance)}
+                        </span>
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
+              {dailyLoading && (
+                <Box display="flex" justifyContent="center" mt={1}>
+                  <CircularProgress size={16} />
+                </Box>
+              )}
+            </Box>
+          )}
         </Paper>
       </div>
       {showCard && index < positions.length && (
