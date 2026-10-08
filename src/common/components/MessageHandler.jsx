@@ -12,19 +12,25 @@ import {
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { usePrevious } from '../../reactHelper';
-import { errorsActions } from '../../store';
+import { messagesActions } from '../../store';
 import { useTranslation } from './LocalizationProvider';
+import { snackBarDurationShortMs } from '../util/duration';
 
-const ErrorHandler = () => {
+const MessageHandler = () => {
   const dispatch = useDispatch();
   const t = useTranslation();
 
-  const errors = useSelector((state) => state.errors.errors);
-  const hasError = errors.length > 0;
-  const error = errors[0];
-  const cachedError = usePrevious(error);
+  const messages = useSelector((state) => state.messages.messages);
+  const hasMessage = messages.length > 0;
+  const currentMessage = messages[0];
+  const cachedMessage = usePrevious(currentMessage);
 
-  const message = (hasError ? error : cachedError) || t('errorGeneral');
+  const activeMessage = hasMessage ? currentMessage : cachedMessage;
+  const message =
+    (typeof activeMessage === 'string' ? activeMessage : activeMessage?.message) ||
+    t('errorGeneral');
+  const severity = activeMessage?.severity || 'error';
+  const { duration = severity === 'error' ? null : snackBarDurationShortMs } = activeMessage || {};
   const multiline = message.includes('\n');
   const displayMessage = multiline
     ? message.split('\n')[0].replace(/^(?:(?:[\w$]+\.)*[\w$]+(?:Exception|Error)?:\s*)+/i, '')
@@ -34,11 +40,20 @@ const ErrorHandler = () => {
 
   return (
     <>
-      <Snackbar open={hasError && !expanded}>
+      <Snackbar
+        key={`${severity}:${message}`}
+        open={hasMessage && !expanded}
+        autoHideDuration={duration}
+        onClose={(_, reason) => {
+          if (duration !== null && reason !== 'clickaway') {
+            dispatch(messagesActions.pop());
+          }
+        }}
+      >
         <Alert
           elevation={6}
-          onClose={() => dispatch(errorsActions.pop())}
-          severity="error"
+          onClose={() => dispatch(messagesActions.pop())}
+          severity={severity}
           variant="filled"
         >
           {displayMessage}
@@ -70,4 +85,4 @@ const ErrorHandler = () => {
   );
 };
 
-export default ErrorHandler;
+export default MessageHandler;

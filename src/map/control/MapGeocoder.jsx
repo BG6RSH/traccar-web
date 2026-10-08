@@ -16,7 +16,7 @@ import { createRoot } from 'react-dom/client';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 import { map } from '../core/MapView';
 import { toMapCoordinates } from '../core/mapUtil';
-import { errorsActions } from '../../store';
+import { messagesActions } from '../../store';
 import { useTranslation } from '../../common/components/LocalizationProvider';
 import fetchOrThrow from '../../common/util/fetchOrThrow';
 
@@ -47,7 +47,7 @@ const MapGeocoder = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const t = useTranslation();
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
   const [anchorEl, setAnchorEl] = useState(null);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -69,7 +69,7 @@ const MapGeocoder = () => {
         setResults(data.features || []);
       } catch (e) {
         if (e.name !== 'AbortError') {
-          dispatch(errorsActions.push(e.message));
+          dispatch(messagesActions.push(e.message));
         }
       } finally {
         setLoading(false);
@@ -90,7 +90,7 @@ const MapGeocoder = () => {
         element.className = 'maplibregl-ctrl maplibregl-ctrl-group';
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = `maplibregl-ctrl-icon ${classes.button}`;
+        button.className = cx('maplibregl-ctrl-icon', classes.button);
         button.onclick = () => setAnchorEl(button);
         element.appendChild(button);
         iconRoot = createRoot(button);
@@ -104,7 +104,7 @@ const MapGeocoder = () => {
     };
     map.addControl(control, theme.direction === 'rtl' ? 'top-left' : 'top-right');
     return () => map.removeControl(control);
-  }, [theme.direction, classes.button]);
+  }, [theme.direction, classes.button, cx]);
 
   const onSelect = (feature) => {
     const [minX, minY, maxX, maxY] = feature.bbox;
