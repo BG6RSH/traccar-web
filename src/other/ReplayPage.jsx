@@ -34,7 +34,7 @@ import { useAttributePreference } from '../common/util/preferences';
 import ReportFilter from '../reports/components/ReportFilter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useCatchCallback } from '../reactHelper';
-import { errorsActions } from '../store';
+import { messagesActions } from '../store';
 import MapCamera from '../map/MapCamera';
 import MapGeofence from '../map/MapGeofence';
 import StatusCard from '../common/components/StatusCard';
@@ -249,7 +249,7 @@ const ReplayPage = () => {
         setDailyItems(map);
       } catch (e) {
         if (e.name !== 'AbortError') {
-          dispatch(errorsActions.push(e.message));
+          dispatch(messagesActions.push(e.message));
         }
       } finally {
         setDailyLoading(false);
@@ -384,7 +384,7 @@ const ReplayPage = () => {
       setCorrectedPositions(data);
       setGraspRoadEnabled(true);
     } catch (error) {
-      dispatch(errorsActions.push(error.message));
+      dispatch(messagesActions.push(error.message));
     } finally {
       setLoading(false);
     }
