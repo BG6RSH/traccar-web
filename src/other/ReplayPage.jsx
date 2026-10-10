@@ -240,6 +240,7 @@ const ReplayPage = () => {
       try {
         const response = await fetchOrThrow(`/api/reports/summary?${query.toString()}`, {
           signal: controller.signal,
+          headers: { Accept: 'application/json' },
         });
         const items = await response.json();
         const map = {};
