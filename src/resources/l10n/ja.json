@@ -287,6 +287,8 @@
     "linkGoogleMaps": "Googleマップ",
     "linkAppleMaps": "Appleマップ",
     "linkStreetView": "ストリートビュー",
+    "linkAmap": "Amap",
+    "linkTencentMaps": "Tencent Maps",
     "linkLiveVideo": "ライブ映像",
     "positionFixTime": "測位日時",
     "positionDeviceTime": "デバイスの時刻",

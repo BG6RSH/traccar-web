@@ -287,6 +287,8 @@
     "linkGoogleMaps": "Карты Google",
     "linkAppleMaps": "Карты Apple",
     "linkStreetView": "Просмотр улиц",
+    "linkAmap": "Amap",
+    "linkTencentMaps": "Tencent Maps",
     "linkLiveVideo": "Прямая видеотрансляция",
     "positionFixTime": "Время определения местоположения",
     "positionDeviceTime": "Время на устройстве",

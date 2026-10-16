@@ -287,6 +287,8 @@
     "linkGoogleMaps": "Google Maps",
     "linkAppleMaps": "Apple Maps",
     "linkStreetView": "Street View",
+    "linkAmap": "Amap",
+    "linkTencentMaps": "Tencent Maps",
     "linkLiveVideo": "लाइव वीडियो",
     "positionFixTime": "स्थान दर्ज करने का समय",
     "positionDeviceTime": "उपकरण का समय",

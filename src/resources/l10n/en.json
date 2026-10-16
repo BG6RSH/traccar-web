@@ -289,6 +289,8 @@
     "linkGoogleMaps": "Google Maps",
     "linkAppleMaps": "Apple Maps",
     "linkStreetView": "Street View",
+    "linkAmap": "Amap",
+    "linkTencentMaps": "Tencent Maps",
     "linkLiveVideo": "Live Video",
     "positionFixTime": "Fix Time",
     "positionDeviceTime": "Device Time",

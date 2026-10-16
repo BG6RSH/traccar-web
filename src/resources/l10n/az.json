@@ -287,6 +287,8 @@
     "linkGoogleMaps": "Google Maps",
     "linkAppleMaps": "Apple Maps",
     "linkStreetView": "Street View",
+    "linkAmap": "Amap",
+    "linkTencentMaps": "Tencent Maps",
     "linkLiveVideo": "Canlı video",
     "positionFixTime": "Mövqenin müəyyən edilmə vaxtı",
     "positionDeviceTime": "Cihaz vaxtı",

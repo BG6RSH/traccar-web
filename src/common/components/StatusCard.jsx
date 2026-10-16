@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Rnd } from 'react-rnd';
+import gcoord from 'gcoord';
 import {
   Card,
   CardContent,
@@ -139,6 +140,11 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
 
   const navigationAppLink = useAttributePreference('navigationAppLink');
   const navigationAppTitle = useAttributePreference('navigationAppTitle');
+
+  // Tencent Maps only accepts GCJ02 coordinates, while Traccar stores WGS84
+  const gcj02Coordinates = position
+    ? gcoord.transform([position.longitude, position.latitude], gcoord.WGS84, gcoord.GCJ02)
+    : null;
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -303,6 +309,20 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
             href={`https://maps.apple.com/?ll=${position.latitude},${position.longitude}`}
           >
             {t('linkAppleMaps')}
+          </MenuItem>
+          <MenuItem
+            component="a"
+            target="_blank"
+            href={`http://uri.amap.com/marker?position=${position.longitude},${position.latitude}&name=${encodeURIComponent(device?.name || '')}&src=traccar&coordinate=wgs84&callnative=1`}
+          >
+            {t('linkAmap')}
+          </MenuItem>
+          <MenuItem
+            component="a"
+            target="_blank"
+            href={`https://apis.map.qq.com/uri/v1/geocoder?coord=${gcj02Coordinates[1]},${gcj02Coordinates[0]}&coord_type=1`}
+          >
+            {t('linkTencentMaps')}
           </MenuItem>
           <MenuItem
             component="a"

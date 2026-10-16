@@ -287,6 +287,8 @@
     "linkGoogleMaps": "Google Maps",
     "linkAppleMaps": "Apple Maps",
     "linkStreetView": "Street View",
+    "linkAmap": "Amap",
+    "linkTencentMaps": "Tencent Maps",
     "linkLiveVideo": "Video trực tiếp",
     "positionFixTime": "Thời gian ghi nhận vị trí",
     "positionDeviceTime": "Thời gian thiết bị",

@@ -287,6 +287,8 @@
     "linkGoogleMaps": "Google mape",
     "linkAppleMaps": "Apple mape",
     "linkStreetView": "Pogled na ulicu",
+    "linkAmap": "Amap",
+    "linkTencentMaps": "Tencent Maps",
     "linkLiveVideo": "Video uživo",
     "positionFixTime": "Vreme određivanja lokacije",
     "positionDeviceTime": "Vreme na uređaju",

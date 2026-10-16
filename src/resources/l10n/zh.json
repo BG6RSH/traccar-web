@@ -288,6 +288,8 @@
     "linkGoogleMaps": "Google 地图",
     "linkAppleMaps": "苹果地图",
     "linkStreetView": "街景",
+    "linkAmap": "高德地图",
+    "linkTencentMaps": "腾讯地图",
     "linkLiveVideo": "实时视频",
     "positionFixTime": "定位时间",
     "positionDeviceTime": "设备时间",

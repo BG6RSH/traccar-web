@@ -287,6 +287,8 @@
     "linkGoogleMaps": "Google 地圖",
     "linkAppleMaps": "Apple 地圖",
     "linkStreetView": "街景",
+    "linkAmap": "高德地圖",
+    "linkTencentMaps": "騰訊地圖",
     "linkLiveVideo": "即時視訊",
     "positionFixTime": "定位時間",
     "positionDeviceTime": "裝置時間",
