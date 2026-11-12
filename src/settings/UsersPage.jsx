@@ -17,7 +17,7 @@ import { formatBoolean, formatTime } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
-import CollectionFab from './components/CollectionFab';
+import AddFab from './components/AddFab';
 import CollectionActions from './components/CollectionActions';
 import TableShimmer from '../common/components/TableShimmer';
 import { useManager } from '../common/util/permissions';
@@ -40,8 +40,8 @@ const UsersPage = () => {
   const [temporary, setTemporary] = useState(false);
 
   const handleLogin = useCatch(async (userId) => {
-    await fetchOrThrow(`/api/session/${userId}`);
-    window.location.replace('/');
+    await fetchOrThrow(`api/session/${userId}`);
+    window.location.replace(document.baseURI);
   });
 
   const actionLogin = {
@@ -64,7 +64,7 @@ const UsersPage = () => {
       if (searchKeyword) {
         query.append('keyword', searchKeyword);
       }
-      const response = await fetchOrThrow(`/api/users?${query.toString()}`, { signal });
+      const response = await fetchOrThrow(`api/users?${query.toString()}`, { signal });
       const data = await response.json();
       setItems((previous) => (offset ? [...previous, ...data] : data));
       setHasMore(data.length >= pageSize);
@@ -144,7 +144,7 @@ const UsersPage = () => {
           </TableRow>
         </TableFooter>
       </Table>
-      <CollectionFab editPath="/settings/user" />
+      <AddFab editPath="/settings/user" />
     </PageLayout>
   );
 };

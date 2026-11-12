@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import dayjs from 'dayjs';
 import { useSearchParams } from 'react-router-dom';
 import {
   Accordion,
@@ -23,7 +24,7 @@ import SettingsMenu from './components/SettingsMenu';
 import useCommonDeviceAttributes from '../common/attributes/useCommonDeviceAttributes';
 import { useCatch } from '../reactHelper';
 import useSettingsStyles from './common/useSettingsStyles';
-import QrCodeDialog from '../common/components/QrCodeDialog';
+import ServerQrCodeDialog from '../common/components/ServerQrCodeDialog';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const DevicePage = () => {
@@ -40,16 +41,24 @@ const DevicePage = () => {
 
   const [item, setItem] = useState(uniqueId ? { uniqueId } : null);
   const [showQr, setShowQr] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleFileInput = useCatch(async (newFile) => {
-    setImageFile(newFile);
     if (newFile && item?.id) {
-      const response = await fetchOrThrow(`/api/devices/${item.id}/image`, {
-        method: 'POST',
-        body: newFile,
-      });
-      setItem({ ...item, attributes: { ...item.attributes, deviceImage: await response.text() } });
+      setUploading(true);
+      try {
+        const response = await fetchOrThrow(`api/devices/${item.id}/image`, {
+          method: 'POST',
+          body: newFile,
+        });
+        const deviceImage = await response.text();
+        setItem((previous) => ({
+          ...previous,
+          attributes: { ...previous.attributes, deviceImage },
+        }));
+      } finally {
+        setUploading(false);
+      }
     } else if (!newFile) {
       // eslint-disable-next-line no-unused-vars
       const { deviceImage, ...remainingAttributes } = item.attributes || {};
@@ -57,7 +66,7 @@ const DevicePage = () => {
     }
   });
 
-  const validate = () => item && item.name && item.uniqueId;
+  const validate = () => item && item.name && item.uniqueId && !uploading;
 
   return (
     <EditItemView
@@ -97,7 +106,7 @@ const DevicePage = () => {
               <SelectField
                 value={item.groupId}
                 onChange={(event) => setItem({ ...item, groupId: Number(event.target.value) })}
-                endpoint="/api/groups"
+                endpoint="api/groups"
                 label={t('groupParent')}
               />
               <TextField
@@ -129,16 +138,20 @@ const DevicePage = () => {
               <SelectField
                 value={item.calendarId}
                 onChange={(event) => setItem({ ...item, calendarId: Number(event.target.value) })}
-                endpoint="/api/calendars"
+                endpoint="api/calendars"
                 label={t('sharedCalendar')}
               />
               <TextField
                 label={t('userExpirationTime')}
                 type="date"
-                value={item.expirationTime ? item.expirationTime.split('T')[0] : '2099-01-01'}
+                value={
+                  item.expirationTime
+                    ? dayjs(item.expirationTime).format('YYYY-MM-DD')
+                    : '2099-01-01'
+                }
                 onChange={(e) => {
                   if (e.target.value) {
-                    setItem({ ...item, expirationTime: new Date(e.target.value).toISOString() });
+                    setItem({ ...item, expirationTime: dayjs(e.target.value).toISOString() });
                   }
                 }}
                 disabled={!manager}
@@ -166,7 +179,8 @@ const DevicePage = () => {
               <AccordionDetails className={classes.details}>
                 <FileInput
                   placeholder={t('attributeDeviceImage')}
-                  value={imageFile}
+                  value={item.attributes?.deviceImage}
+                  disabled={uploading}
                   onChange={handleFileInput}
                   slotProps={{ htmlInput: { accept: 'image/*' } }}
                 />
@@ -180,7 +194,7 @@ const DevicePage = () => {
           />
         </>
       )}
-      <QrCodeDialog open={showQr} onClose={() => setShowQr(false)} />
+      <ServerQrCodeDialog open={showQr} onClose={() => setShowQr(false)} />
     </EditItemView>
   );
 };

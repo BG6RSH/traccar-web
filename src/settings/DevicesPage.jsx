@@ -18,7 +18,7 @@ import { useAsyncTask, useScrollToLoad, pageSize } from '../reactHelper';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
-import CollectionFab from './components/CollectionFab';
+import AddFab from './components/AddFab';
 import CollectionActions from './components/CollectionActions';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
@@ -58,7 +58,7 @@ const DevicesPage = () => {
       if (searchKeyword) {
         query.append('keyword', searchKeyword);
       }
-      const response = await fetchOrThrow(`/api/devices?${query.toString()}`, { signal });
+      const response = await fetchOrThrow(`api/devices?${query.toString()}`, { signal });
       const data = await response.json();
       setItems((previous) => (offset ? [...previous, ...data] : data));
       setHasMore(data.length >= pageSize);
@@ -169,7 +169,7 @@ const DevicesPage = () => {
         <TableFooter>
           <TableRow>
             <TableCell>
-              <Button onClick={handleExport} variant="text">
+              <Button onClick={handleExport} variant="text" disabled={!items.length}>
                 {t('reportExport')}
               </Button>
             </TableCell>
@@ -190,7 +190,7 @@ const DevicesPage = () => {
           </TableRow>
         </TableFooter>
       </Table>
-      <CollectionFab editPath="/settings/device" />
+      <AddFab editPath="/settings/device" />
     </PageLayout>
   );
 };

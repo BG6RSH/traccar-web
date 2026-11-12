@@ -6,7 +6,7 @@ import { formatBoolean } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
-import CollectionFab from './components/CollectionFab';
+import AddFab from './components/AddFab';
 import CollectionActions from './components/CollectionActions';
 import TableShimmer from '../common/components/TableShimmer';
 import SearchHeader from './components/SearchHeader';
@@ -28,7 +28,7 @@ const NotificationsPage = () => {
       if (searchKeyword) {
         query.append('keyword', searchKeyword);
       }
-      const response = await fetchOrThrow(`/api/notifications?${query.toString()}`, { signal });
+      const response = await fetchOrThrow(`api/notifications?${query.toString()}`, { signal });
       const data = await response.json();
       setItems((previous) => (offset ? [...previous, ...data] : data));
       setHasMore(data.length >= pageSize);
@@ -95,7 +95,7 @@ const NotificationsPage = () => {
           )}
         </TableBody>
       </Table>
-      <CollectionFab editPath="/settings/notification" />
+      <AddFab editPath="/settings/notification" />
     </PageLayout>
   );
 };

@@ -29,6 +29,12 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     flexDirection: 'column',
   },
+  table: {
+    tableLayout: 'fixed',
+    '& th, & td': {
+      overflowWrap: 'anywhere',
+    },
+  },
   content: {
     overflow: 'auto',
     paddingTop: theme.spacing(2),
@@ -50,7 +56,7 @@ const PositionPage = () => {
   useAsyncTask(
     async ({ signal }) => {
       if (id) {
-        const response = await fetchOrThrow(`/api/positions?id=${id}`, { signal });
+        const response = await fetchOrThrow(`api/positions?id=${id}`, { signal });
         const positions = await response.json();
         if (positions.length > 0) {
           setItem(positions[0]);
@@ -83,7 +89,7 @@ const PositionPage = () => {
       <div className={classes.content}>
         <Container maxWidth="sm">
           <Paper>
-            <Table>
+            <Table className={classes.table}>
               <TableHead>
                 <TableRow>
                   <TableCell>{t('stateName')}</TableCell>

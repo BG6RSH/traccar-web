@@ -9,9 +9,10 @@ const DeviceUsersValue = ({ deviceId }) => {
 
   const [users, setUsers] = useState();
 
-  const loadUsers = useCatch(async () => {
+  const loadUsers = useCatch(async (event) => {
+    event.preventDefault();
     const query = new URLSearchParams({ deviceId });
-    const response = await fetchOrThrow(`/api/users?${query.toString()}`);
+    const response = await fetchOrThrow(`api/users?${query.toString()}`);
     setUsers(await response.json());
   });
 

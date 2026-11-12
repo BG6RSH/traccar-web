@@ -14,11 +14,17 @@ import {
   Select,
   MenuItem,
   FormGroup,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import FileInput from '../common/components/FileInput';
+import RemoveDialog from '../common/components/RemoveDialog';
 import { sessionActions } from '../store';
 import EditAttributesAccordion from './components/EditAttributesAccordion';
 import { useTranslation } from '../common/components/LocalizationProvider';
@@ -27,7 +33,7 @@ import PageLayout from '../common/components/PageLayout';
 import SettingsMenu from './components/SettingsMenu';
 import useCommonDeviceAttributes from '../common/attributes/useCommonDeviceAttributes';
 import useCommonUserAttributes from '../common/attributes/useCommonUserAttributes';
-import { useCatch } from '../reactHelper';
+import { useAsyncTask, useCatch } from '../reactHelper';
 import useServerAttributes from '../common/attributes/useServerAttributes';
 import useMapStyles from '../map/core/useMapStyles';
 import { map } from '../map/core/MapView';
@@ -48,17 +54,26 @@ const ServerPage = () => {
   const original = useSelector((state) => state.session.server);
   const [item, setItem] = useState({ ...original });
 
+  const [files, setFiles] = useState([]);
+  const [removedFile, setRemovedFile] = useState(null);
+
+  useAsyncTask(async ({ signal }) => {
+    const response = await fetchOrThrow('api/server/file', { signal });
+    setFiles(await response.json());
+  }, []);
+
   const handleFileChange = useCatch(async (newFile) => {
     if (newFile) {
-      await fetchOrThrow(`/api/server/file/${newFile.name}`, {
+      await fetchOrThrow(`api/server/file/${encodeURIComponent(newFile.name)}`, {
         method: 'POST',
         body: newFile,
       });
+      setFiles((previous) => [...new Set([...previous, newFile.name])].sort());
     }
   });
 
   const handleSave = useCatch(async () => {
-    const response = await fetchOrThrow('/api/server', {
+    const response = await fetchOrThrow('api/server', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(item),
@@ -91,7 +106,7 @@ const ServerPage = () => {
                   <InputLabel>{t('mapDefault')}</InputLabel>
                   <Select
                     label={t('mapDefault')}
-                    value={item.map || 'locationIqStreets'}
+                    value={item.map || 'openFreeMap'}
                     onChange={(e) => setItem({ ...item, map: e.target.value })}
                   >
                     {mapStyles
@@ -190,7 +205,7 @@ const ServerPage = () => {
                       attributes: { ...item.attributes, timezone: e.target.value },
                     })
                   }
-                  endpoint="/api/server/timezones"
+                  endpoint="api/server/timezones"
                   keyGetter={(it) => it}
                   titleGetter={(it) => it}
                   label={t('sharedTimezone')}
@@ -340,6 +355,31 @@ const ServerPage = () => {
                   placeholder={t('sharedSelectFile')}
                   value={null}
                   onChange={handleFileChange}
+                />
+                <List disablePadding>
+                  {files.map((file) => (
+                    <ListItem
+                      key={file}
+                      disableGutters
+                      secondaryAction={
+                        <IconButton onClick={() => setRemovedFile(file)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      }
+                    >
+                      <ListItemText primary={file} />
+                    </ListItem>
+                  ))}
+                </List>
+                <RemoveDialog
+                  open={Boolean(removedFile)}
+                  endpoint="server/file"
+                  itemId={encodeURIComponent(removedFile || '')}
+                  onResult={(removed) => {
+                    if (removed)
+                      setFiles((previous) => previous.filter((file) => file !== removedFile));
+                    setRemovedFile(null);
+                  }}
                 />
               </AccordionDetails>
             </Accordion>

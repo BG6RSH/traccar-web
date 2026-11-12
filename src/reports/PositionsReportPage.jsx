@@ -71,7 +71,7 @@ const PositionsReportPage = () => {
       deviceIds.forEach((deviceId) => query.append('deviceId', deviceId));
       setLoading(true);
       try {
-        const response = await fetchOrThrow(`/api/positions?${query.toString()}`, {
+        const response = await fetchOrThrow(`api/positions?${query.toString()}`, {
           headers: { Accept: 'application/json' },
         });
         const data = await response.json();
@@ -94,6 +94,7 @@ const PositionsReportPage = () => {
           [...keyList, ...keySet].map((key) => [key, positionAttributes[key]?.name || key]),
         );
         setItems(data);
+        setSelectedItem(null);
       } finally {
         setLoading(false);
       }
@@ -107,7 +108,7 @@ const PositionsReportPage = () => {
       query.append('geofenceId', geofenceId);
     }
     deviceIds.forEach((deviceId) => query.append('deviceId', deviceId));
-    window.location.assign(`/api/positions/${format}?${query.toString()}`);
+    window.location.assign(`api/positions/${format}?${query.toString()}`);
   });
 
   const onSchedule = useCatch(async (deviceIds, groupIds, report) => {
@@ -158,7 +159,7 @@ const PositionsReportPage = () => {
                     const values = e.target.value ? [e.target.value] : [];
                     updateReportParams(searchParams, setSearchParams, 'geofenceId', values);
                   }}
-                  endpoint="/api/geofences"
+                  endpoint="api/geofences"
                   label={t('sharedGeofence')}
                   fullWidth
                 />

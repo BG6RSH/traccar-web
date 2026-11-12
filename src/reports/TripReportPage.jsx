@@ -18,6 +18,7 @@ import ReportFilter from './components/ReportFilter';
 import { useAttributePreference, usePreference } from '../common/util/preferences';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import PageLayout from '../common/components/PageLayout';
+import SelectField from '../common/components/SelectField';
 import ReportsMenu from './components/ReportsMenu';
 import ColumnSelect from './components/ColumnSelect';
 import ResizeHandle from './components/ResizeHandle';
@@ -50,6 +51,7 @@ const columnsArray = [
   ['duration', 'reportDuration'],
   ['spentFuel', 'reportSpentFuel'],
   ['driverName', 'sharedDriver'],
+  ['business', 'sharedType'],
 ];
 const columnsMap = new Map(columnsArray);
 
@@ -72,10 +74,15 @@ const TripReportPage = () => {
     'distance',
     'averageSpeed',
   ]);
+  const [tripType, setTripType] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [route, setRoute] = useState(null);
+
+  const filteredItems = items.filter(
+    (item) => !tripType || item.business === (tripType === 'business'),
+  );
 
   const markers = selectedItem && [
     {
@@ -98,7 +105,7 @@ const TripReportPage = () => {
           from: selectedItem.startTime,
           to: selectedItem.endTime,
         });
-        const response = await fetchOrThrow(`/api/reports/route?${query.toString()}`, {
+        const response = await fetchOrThrow(`api/reports/route?${query.toString()}`, {
           headers: { Accept: 'application/json' },
           signal,
         });
@@ -116,7 +123,7 @@ const TripReportPage = () => {
     groupIds.forEach((groupId) => query.append('groupId', groupId));
     setLoading(true);
     try {
-      const response = await fetchOrThrow(`/api/reports/trips?${query.toString()}`, {
+      const response = await fetchOrThrow(`api/reports/trips?${query.toString()}`, {
         headers: { Accept: 'application/json' },
       });
       setItems(await response.json());
@@ -127,7 +134,7 @@ const TripReportPage = () => {
 
   const onExport = useCatch(async () => {
     const sheets = new Map();
-    items.forEach((item) => {
+    filteredItems.forEach((item) => {
       const deviceName = devices[item.deviceId].name;
       if (!sheets.has(deviceName)) {
         sheets.set(deviceName, []);
@@ -184,6 +191,8 @@ const TripReportPage = () => {
     switch (key) {
       case 'deviceId':
         return devices[value].name;
+      case 'business':
+        return t(value ? 'positionBusiness' : 'reportPrivate');
       case 'startTime':
       case 'endTime':
         return formatTime(value, 'minutes');
@@ -246,6 +255,21 @@ const TripReportPage = () => {
               loading={loading}
               formats={['xlsx']}
             >
+              <div className={classes.filterItem}>
+                <SelectField
+                  fullWidth
+                  label={t('sharedType')}
+                  value={tripType}
+                  data={[
+                    { id: 'business', name: t('positionBusiness') },
+                    { id: 'private', name: t('reportPrivate') },
+                  ]}
+                  onChange={(event) => {
+                    setTripType(event.target.value);
+                    setSelectedItem(null);
+                  }}
+                />
+              </div>
               <ColumnSelect columns={columns} setColumns={setColumns} columnsArray={columnsArray} />
             </ReportFilter>
           </div>
@@ -261,7 +285,7 @@ const TripReportPage = () => {
             </TableHead>
             <TableBody>
               {!loading ? (
-                items.map((item) => (
+                filteredItems.map((item) => (
                   <TableRow key={item.startPositionId}>
                     <TableCell className={classes.columnAction} padding="none">
                       <div className={classes.columnActionContainer}>

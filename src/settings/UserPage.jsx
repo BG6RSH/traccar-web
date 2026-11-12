@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Accordion,
@@ -33,6 +34,7 @@ import useUserAttributes from '../common/attributes/useUserAttributes';
 import { sessionActions } from '../store';
 import SelectField from '../common/components/SelectField';
 import PasswordField from '../common/components/PasswordField';
+import TotpQrCodeButton from '../common/components/TotpQrCodeButton';
 import SettingsMenu from './components/SettingsMenu';
 import useCommonUserAttributes from '../common/attributes/useCommonUserAttributes';
 import { useAdministrator, useRestriction, useManager } from '../common/util/permissions';
@@ -73,7 +75,7 @@ const UserPage = () => {
   const handleDelete = useCatch(async () => {
     if (deleteEmail === currentUser.email) {
       setDeleteFailed(false);
-      await fetchOrThrow(`/api/users/${currentUser.id}`, { method: 'DELETE' });
+      await fetchOrThrow(`api/users/${currentUser.id}`, { method: 'DELETE' });
       navigate('/login');
       dispatch(sessionActions.updateUser(null));
     } else {
@@ -82,7 +84,7 @@ const UserPage = () => {
   });
 
   const handleGenerateTotp = useCatch(async () => {
-    const response = await fetchOrThrow('/api/users/totp', { method: 'POST' });
+    const response = await fetchOrThrow('api/users/totp', { method: 'POST' });
     setItem({ ...item, totpKey: await response.text() });
   });
 
@@ -92,7 +94,7 @@ const UserPage = () => {
   };
 
   const handleRevokeToken = useCatch(async () => {
-    await fetchOrThrow('/api/session/token/revoke', {
+    await fetchOrThrow('api/session/token/revoke', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ token: revokeToken }).toString(),
@@ -172,6 +174,7 @@ const UserPage = () => {
                     value={item.totpKey || ''}
                     endAdornment={
                       <InputAdornment position="end">
+                        <TotpQrCodeButton email={item.email} totpKey={item.totpKey} />
                         <IconButton size="small" edge="end" onClick={handleGenerateTotp}>
                           <CachedIcon fontSize="small" />
                         </IconButton>
@@ -203,7 +206,7 @@ const UserPage = () => {
                 <InputLabel>{t('mapDefault')}</InputLabel>
                 <Select
                   label={t('mapDefault')}
-                  value={item.map || 'locationIqStreets'}
+                  value={item.map || 'openFreeMap'}
                   onChange={(e) => setItem({ ...item, map: e.target.value })}
                 >
                   {mapStyles
@@ -299,7 +302,7 @@ const UserPage = () => {
                 onChange={(e) =>
                   setItem({ ...item, attributes: { ...item.attributes, timezone: e.target.value } })
                 }
-                endpoint="/api/server/timezones"
+                endpoint="api/server/timezones"
                 keyGetter={(it) => it}
                 titleGetter={(it) => it}
                 label={t('sharedTimezone')}
@@ -359,10 +362,14 @@ const UserPage = () => {
               <TextField
                 label={t('userExpirationTime')}
                 type="date"
-                value={item.expirationTime ? item.expirationTime.split('T')[0] : '2099-01-01'}
+                value={
+                  item.expirationTime
+                    ? dayjs(item.expirationTime).format('YYYY-MM-DD')
+                    : '2099-01-01'
+                }
                 onChange={(e) => {
                   if (e.target.value) {
-                    setItem({ ...item, expirationTime: new Date(e.target.value).toISOString() });
+                    setItem({ ...item, expirationTime: dayjs(e.target.value).toISOString() });
                   }
                 }}
                 disabled={!manager}

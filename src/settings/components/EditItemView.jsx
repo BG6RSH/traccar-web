@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Container,
@@ -31,12 +32,13 @@ const EditItemView = ({
   const t = useTranslation();
 
   const { id } = useParams();
+  const [saving, setSaving] = useState(false);
 
   useAsyncTask(
     async ({ signal }) => {
       if (!item) {
         if (id) {
-          const response = await fetchOrThrow(`/api/${endpoint}/${id}`, { signal });
+          const response = await fetchOrThrow(`api/${endpoint}/${id}`, { signal });
           setItem(await response.json());
         } else {
           setItem(defaultItem || {});
@@ -47,21 +49,26 @@ const EditItemView = ({
   );
 
   const handleSave = useCatch(async () => {
-    let url = `/api/${endpoint}`;
+    let url = `api/${endpoint}`;
     if (id) {
       url += `/${id}`;
     }
 
-    const response = await fetchOrThrow(url, {
-      method: !id ? 'POST' : 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(item),
-    });
+    setSaving(true);
+    try {
+      const response = await fetchOrThrow(url, {
+        method: !id ? 'POST' : 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item),
+      });
 
-    if (onItemSaved) {
-      onItemSaved(await response.json());
+      if (onItemSaved) {
+        onItemSaved(await response.json());
+      }
+      navigate(-1);
+    } finally {
+      setSaving(false);
     }
-    navigate(-1);
   });
 
   return (
@@ -93,7 +100,7 @@ const EditItemView = ({
             color="primary"
             variant="contained"
             onClick={handleSave}
-            disabled={!item || !validate()}
+            disabled={saving || !item || !validate()}
           >
             {t('sharedSave')}
           </Button>
